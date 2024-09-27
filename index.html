@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RREF Matrix Properties Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        #matrix {
+            font-family: monospace;
+            white-space: pre;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 1.5rem;
+            line-height: 1.6;
+        }
+        .button-container {
+            margin: 1rem 0;
+        }
+        button {
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            font-weight: bold;
+            margin: 1rem 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+        .score {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>RREF Matrix Properties Game</h1>
+        <div id="matrix"></div>
+        <div class="button-container">
+            <button onclick="checkAnswer('one-to-one')">One-to-One</button>
+            <button onclick="checkAnswer('onto')">Onto</button>
+            <button onclick="checkAnswer('both')">Both</button>
+            <button onclick="checkAnswer('neither')">Neither</button>
+        </div>
+        <p id="result"></p>
+        <p class="score">Score: <span id="score">0</span> / <span id="total">0</span></p>
+        <button onclick="newGame()">New Matrix</button>
+    </div>
+
+    <script>
+        let matrix, correctAnswer, score = 0, total = 0;
+
+        function generateRREFMatrix(rows, cols) {
+            const matrix = Array(rows).fill().map(() => Array(cols).fill(0));
+            let leadingOnes = 0;
+
+            for (let i = 0; i < rows && leadingOnes < cols; i++) {
+                if (Math.random() < 0.7) {
+                    matrix[i][leadingOnes] = 1;
+                    for (let j = leadingOnes + 1; j < cols; j++) {
+                        matrix[i][j] = Math.random() < 0.3 ? Math.floor(Math.random() * 3) - 1 : 0;
+                    }
+                    for (let k = 0; k < i; k++) {
+                        matrix[k][leadingOnes] = 0;
+                    }
+                    leadingOnes++;
+                }
+            }
+
+            return matrix;
+        }
+
+        function checkProperties(matrix) {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            let pivotRows = 0;
+            let pivotCols = 0;
+
+            for (let j = 0; j < cols; j++) {
+                let hasNonZero = false;
+                for (let i = 0; i < rows; i++) {
+                    if (matrix[i][j] !== 0) {
+                        hasNonZero = true;
+                        break;
+                    }
+                }
+                if (hasNonZero) pivotCols++;
+            }
+
+            for (let i = 0; i < rows; i++) {
+                if (matrix[i].some(val => val !== 0)) {
+                    pivotRows++;
+                }
+            }
+
+            const oneToOne = pivotRows === cols;
+            const onto = pivotRows === rows;
+
+            return oneToOne && onto ? "both" : oneToOne ? "one-to-one" : onto ? "onto" : "neither";
+        }
+
+        function displayMatrix(matrix) {
+            const matrixDiv = document.getElementById('matrix');
+            matrixDiv.textContent = matrix.map(row => row.map(val => val.toString().padStart(3)).join(' ')).join('\n');
+        }
+
+        function newGame() {
+            const rows = Math.floor(Math.random() * 3) + 2;
+            const cols = Math.floor(Math.random() * 3) + 2;
+            matrix = generateRREFMatrix(rows, cols);
+            correctAnswer = checkProperties(matrix);
+            displayMatrix(matrix);
+            document.getElementById('result').textContent = '';
+        }
+
+        function checkAnswer(answer) {
+            total++;
+            if (answer === correctAnswer) {
+                score++;
+                document.getElementById('result').textContent = 'Correct!';
+                document.getElementById('result').style.color = '#4CAF50';
+            } else {
+                document.getElementById('result').textContent = `Incorrect. The correct answer is: ${correctAnswer}`;
+                document.getElementById('result').style.color = '#f44336';
+            }
+            document.getElementById('score').textContent = score;
+            document.getElementById('total').textContent = total;
+        }
+
+        newGame();
+    </script>
+</body>
+</html>
